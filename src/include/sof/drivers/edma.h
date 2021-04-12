@@ -20,6 +20,7 @@
 #define EDMA_CH_INT                     0x08
 #define EDMA_CH_SBR                     0x0C
 #define EDMA_CH_PRI                     0x10
+#define EDMA_CH_MUX                     0x14
 #define EDMA_TCD_SADDR                  0x20
 #define EDMA_TCD_SOFF                   0x24
 #define EDMA_TCD_ATTR                   0x26

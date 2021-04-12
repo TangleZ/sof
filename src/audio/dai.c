@@ -551,7 +551,10 @@ static int dai_params(struct comp_dev *dev,
 static int dai_prepare(struct comp_dev *dev)
 {
 	struct dai_data *dd = comp_get_drvdata(dev);
+	struct sof_ipc_comp_dai *dai = COMP_GET_IPC(dev, sof_ipc_comp_dai);
 	int ret = 0;
+	dd->chan->srcid = dai_get_srcid(dd->dai, dai->direction,
+					      dd->stream_id);
 
 	comp_dbg(dev, "dai_prepare()");
 

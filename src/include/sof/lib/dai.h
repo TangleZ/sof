@@ -78,6 +78,7 @@ struct dai_ops {
 	int (*get_hw_params)(struct dai *dai,
 			     struct sof_ipc_stream_params *params, int dir);
 	int (*get_handshake)(struct dai *dai, int direction, int stream_id);
+	int (*get_srcid)(struct dai *dai, int direction, int stream_id);
 	int (*get_fifo)(struct dai *dai, int direction, int stream_id);
 	int (*probe)(struct dai *dai);
 	int (*remove)(struct dai *dai);
@@ -141,6 +142,8 @@ struct dai_plat_data {
 	int irq;
 	const char *irq_name;
 	uint32_t flags;
+	uint32_t dmamux_rx_num;
+	uint32_t dmamux_tx_num;
 	struct dai_plat_fifo_data fifo[2];
 };
 
@@ -390,6 +393,19 @@ static inline int dai_get_handshake(struct dai *dai, int direction,
 				    int stream_id)
 {
 	int ret = dai->drv->ops.get_handshake(dai, direction, stream_id);
+
+	platform_shared_commit(dai, sizeof(*dai));
+
+	return ret;
+}
+
+/**
+ * \brief Get Digital Audio interface DMA srcid
+ */
+static inline int dai_get_srcid(struct dai *dai, int direction,
+				    int stream_id)
+{
+	int ret = dai->drv->ops.get_srcid(dai, direction, stream_id);
 
 	platform_shared_commit(dai, sizeof(*dai));
 

@@ -275,7 +275,7 @@ static int edma_validate_nonsg_config(struct dma_sg_elem_array *sgelems,
 static int edma_setup_tcd(struct dma_chan_data *channel, int16_t soff,
 			  int16_t doff, bool cyclic, bool sg, bool irqoff,
 			  struct dma_sg_elem_array *sgelems, int src_width,
-			  int dest_width, uint32_t burst_elems)
+			  int dest_width, uint32_t burst_elems, uint32_t srcid)
 {
 	int rc;
 	uint32_t sbase, dbase, total_size, elem_count, elem_size, size;
@@ -324,6 +324,11 @@ static int edma_setup_tcd(struct dma_chan_data *channel, int16_t soff,
 	if (rc < 0)
 		return rc;
 
+	/* only impact 8ulp platform */
+	if (srcid) {
+		if (!dma_chan_reg_read(channel, EDMA_CH_MUX))
+			dma_chan_reg_write(channel, EDMA_CH_MUX, srcid);
+	}
 	/* Configure the in-hardware TCD */
 	dma_chan_reg_write(channel, EDMA_TCD_SADDR, sbase);
 	dma_chan_reg_write16(channel, EDMA_TCD_SOFF, soff);
@@ -380,7 +385,7 @@ static int edma_set_config(struct dma_chan_data *channel,
 	return edma_setup_tcd(channel, soff, doff, config->cyclic,
 			      config->scatter, config->irq_disabled,
 			      &config->elem_array, config->src_width,
-			      config->dest_width, config->burst_elems);
+			      config->dest_width, config->burst_elems, channel->srcid);
 }
 
 /* restore DMA context after leaving D3 */

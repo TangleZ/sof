@@ -210,6 +210,7 @@ struct dma_chan_data {
 	uint32_t index;
 	uint32_t core;
 	uint64_t period;	/* DMA channel's transfer period in us */
+	uint32_t srcid;
 	/* true if this DMA channel is the scheduling source */
 	bool is_scheduling_source;
 

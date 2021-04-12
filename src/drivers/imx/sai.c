@@ -386,6 +386,11 @@ static int sai_get_handshake(struct dai *dai, int direction, int stream_id)
 	return dai->plat_data.fifo[direction].handshake;
 }
 
+static int sai_get_srcid(struct dai *dai, int direction, int stream_id)
+{
+	return direction ? dai->plat_data.dmamux_rx_num : dai->plat_data.dmamux_tx_num;
+}
+
 static int sai_get_fifo(struct dai *dai, int direction, int stream_id)
 {
 	switch (direction) {
@@ -425,6 +430,7 @@ const struct dai_driver sai_driver = {
 		.pm_context_restore	= sai_context_restore,
 		.probe			= sai_probe,
 		.get_handshake		= sai_get_handshake,
+		.get_srcid		= sai_get_srcid,
 		.get_fifo		= sai_get_fifo,
 		.get_hw_params		= sai_get_hw_params,
 	},
