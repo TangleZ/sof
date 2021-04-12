@@ -3,7 +3,6 @@
 add_local_sources(sof
 	esai.c
 	sai.c
-	interrupt.c
 	ipc.c
 	timer.c
 	sdma.c
@@ -11,4 +10,10 @@ add_local_sources(sof
 
 if(CONFIG_IMX_EDMA)
 	add_local_sources(sof edma.c)
+endif()
+if(CONFIG_IMX_NOIRQ)
+	add_local_sources(sof interrupt-noirq.c)
+endif()
+if(CONFIG_IMX_IRQ)
+	add_local_sources(sof interrupt.c)
 endif()
