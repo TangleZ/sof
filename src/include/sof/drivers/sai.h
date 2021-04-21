@@ -18,6 +18,8 @@
 
 #ifdef CONFIG_IMX8M
 #define SAI_OFS		8
+#elif CONFIG_IMX8ULP
+#define SAI_OFS		8
 #else
 #define SAI_OFS		0
 #endif
