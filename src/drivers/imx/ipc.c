@@ -43,17 +43,17 @@ static void irq_handler(void *arg)
 	uint32_t status;
 
 	/* Interrupt arrived, check src */
-	status = imx_mu_read(IMX_MU_xSR);
+	status = imx_mu_read(IMX_MU_GSR);
 
 	tr_dbg(&ipc_tr, "ipc: irq isr 0x%x", status);
 
 	/* reply message(done) from host */
-	if (status & IMX_MU_xSR_GIPn(1)) {
+	if (status & IMX_MU_GSR_GIPn(1)) {
 		/* Disable GP interrupt #1 */
 		imx_mu_xcr_rmw(0, IMX_MU_xCR_GIEn(1));
 
 		/* Clear GP pending interrupt #1 */
-		imx_mu_xsr_rmw(IMX_MU_xSR_GIPn(1), 0);
+		imx_mu_xsr_rmw(IMX_MU_GSR_GIPn(1), 0);
 
 		interrupt_clear(PLATFORM_IPC_INTERRUPT);
 
@@ -64,13 +64,13 @@ static void irq_handler(void *arg)
 	}
 
 	/* new message from host */
-	if (status & IMX_MU_xSR_GIPn(0)) {
+	if (status & IMX_MU_GSR_GIPn(0)) {
 
 		/* Disable GP interrupt #0 */
 		imx_mu_xcr_rmw(0, IMX_MU_xCR_GIEn(0));
 
 		/* Clear GP pending interrupt #0 */
-		imx_mu_xsr_rmw(IMX_MU_xSR_GIPn(0), 0);
+		imx_mu_xsr_rmw(IMX_MU_GSR_GIPn(0), 0);
 
 		interrupt_clear(PLATFORM_IPC_INTERRUPT);
 
@@ -227,16 +227,16 @@ int ipc_platform_poll_is_cmd_pending(void)
 	uint32_t status;
 
 	/* Interrupt arrived, check src */
-	status = imx_mu_read(IMX_MU_xSR);
+	status = imx_mu_read(IMX_MU_GSR);
 
 	/* new message from host */
-	if (status & IMX_MU_xSR_GIPn(0)) {
+	if (status & IMX_MU_GSR_GIPn(0)) {
 
 		/* Disable GP interrupt #0 */
 		imx_mu_xcr_rmw(0, IMX_MU_xCR_GIEn(0));
 
 		/* Clear GP pending interrupt #0 */
-		imx_mu_xsr_rmw(IMX_MU_xSR_GIPn(0), 0);
+		imx_mu_xsr_rmw(IMX_MU_GSR_GIPn(0), 0);
 
 		interrupt_clear(PLATFORM_IPC_INTERRUPT);
 
@@ -253,15 +253,15 @@ int ipc_platform_poll_is_host_ready(void)
 	uint32_t status;
 
 	/* Interrupt arrived, check src */
-	status = imx_mu_read(IMX_MU_xSR);
+	status = imx_mu_read(IMX_MU_GSR);
 
 	/* reply message(done) from host */
-	if (status & IMX_MU_xSR_GIPn(1)) {
+	if (status & IMX_MU_GSR_GIPn(1)) {
 		/* Disable GP interrupt #1 */
 		imx_mu_xcr_rmw(0, IMX_MU_xCR_GIEn(1));
 
 		/* Clear GP pending interrupt #1 */
-		imx_mu_xsr_rmw(IMX_MU_xSR_GIPn(1), 0);
+		imx_mu_xsr_rmw(IMX_MU_GSR_GIPn(1), 0);
 
 		interrupt_clear(PLATFORM_IPC_INTERRUPT);
 
