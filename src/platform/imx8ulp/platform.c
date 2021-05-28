@@ -131,11 +131,17 @@ SHARED_DATA struct timer timer = {
 
 int platform_boot_complete(uint32_t boot_message)
 {
-	mailbox_dspbox_write(0, &ready, sizeof(ready));
+	int *ptr = (void *)0x1b000000;
+	*(ptr) = 0xff;
+	//mailbox_dspbox_write(0, &ready, sizeof(ready));
 
+	memcpy_s(ptr, 4, &ready, 4);
+
+	*(ptr) = 0xf;
 	/* now interrupt host to tell it we are done booting */
-	imx_mu_xcr_rmw(IMX_MU_VERSION, IMX_MU_GCR, IMX_MU_xCR_GIRn(1), 0);
+	imx_mu_xcr_rmw(IMX_MU_VERSION, IMX_MU_GCR, IMX_MU_xCR_GIRn(IMX_MU_VERSION, 1), 0);
 
+	*(ptr+1) = IMX_MU_xCR_GIRn(IMX_MU_VERSION, 1);
 	/* boot now complete so we can relax the CPU */
 	/* For now skip this to gain more processing performance
 	 * for SRC component.

@@ -25,10 +25,10 @@ enum imx_mu_type {
 #endif
 
 enum imx_mu_xcr {
-	IMX_MU_GIER = 110,
-	IMX_MU_GCR = 114,
-	IMX_MU_TCR = 120,
-	IMX_MU_RCR = 128,
+	IMX_MU_GIER = 0x110,
+	IMX_MU_GCR = 0x114,
+	IMX_MU_TCR = 0x120,
+	IMX_MU_RCR = 0x128,
 };
 
 enum imx_mu_xsr {
@@ -82,7 +82,10 @@ static inline void imx_mu_write(uint32_t val, uint32_t reg)
 static inline uint32_t imx_mu_xcr_rmw(uint32_t type, uint32_t idx, uint32_t set, uint32_t clr)
 {
 	volatile uint32_t val;
+	int *ptr = (void *)0x1b000000;
 
+	*(ptr +4) = idx; *(ptr+3) = set;
+	*(ptr +5 ) = IMX_MU_xCR(type,idx);
 	val = imx_mu_read(IMX_MU_xCR(type, idx));
 	val &= ~clr;
 	val |= set;
