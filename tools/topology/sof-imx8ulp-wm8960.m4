@@ -56,14 +56,14 @@ dnl     period, priority, core, time_domain)
 # playback DAI is SAI6 using 2 periods
 # Buffers use s32le format, with 48 frame per 1000us on core 0 with priority 0
 DAI_ADD(sof/pipe-dai-playback.m4,
-	1, SAI, 6, sai6-wm8960-hifi,
+	1, SAI, 5, sai5-bt-hifi,
 	PIPELINE_SOURCE_1, 2, s32le,
 	1000, 0, 0, SCHEDULE_TIME_DOMAIN_DMA)
 
 # capture DAI is SAI6 using 2 periods
 # Buffers use s32le format, with 48 frame per 1000us on core 0 with priority 0
 DAI_ADD(sof/pipe-dai-capture.m4,
-	2, SAI, 6, sai6-wm8960-hifi,
+	2, SAI, 5, sai5-bt-hifi,
 	PIPELINE_SINK_2, 2, s32le,
 	1000, 0, 0)
 
@@ -74,9 +74,9 @@ dnl PCM_DUPLEX_ADD(name, pcm_id, playback, capture)
 PCM_DUPLEX_ADD(Port0, 0, PIPELINE_PCM_1, PIPELINE_PCM_2)
 
 dnl DAI_CONFIG(type, idx, link_id, name, sai_config)
-DAI_CONFIG(SAI, 6, 0, sai6-wm8960-hifi,
+DAI_CONFIG(SAI, 5, 0, sai5-bt-hifi,
 	SAI_CONFIG(I2S, SAI_CLOCK(mclk, 12288000, codec_mclk_in),
 		SAI_CLOCK(bclk, 3072000, codec_master),
 		SAI_CLOCK(fsync, 48000, codec_master),
 		SAI_TDM(2, 32, 3, 3),
-		SAI_CONFIG_DATA(SAI, 3, 0)))
+		SAI_CONFIG_DATA(SAI, 5, 0)))
