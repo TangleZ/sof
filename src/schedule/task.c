@@ -120,7 +120,7 @@ int task_main_start(struct sof *sof)
 		return ret;
 
 	/* task initialized in edf_scheduler_init */
-	schedule_task(*task_main_get(), 0, UINT64_MAX);
+	ret = schedule_task(*task_main_get(), 0, UINT64_MAX);
 
 	/* something bad happened */
 	return -EIO;
