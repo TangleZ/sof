@@ -133,9 +133,7 @@ int platform_boot_complete(uint32_t boot_message)
 {
 	int *ptr = (void *)0x1b000000;
 	*(ptr) = 0xff;
-	//mailbox_dspbox_write(0, &ready, sizeof(ready));
-
-	memcpy_s(ptr, 4, &ready, 4);
+	mailbox_dspbox_write(0, &ready, sizeof(ready));
 
 	*(ptr) = 0xf;
 	/* now interrupt host to tell it we are done booting */
