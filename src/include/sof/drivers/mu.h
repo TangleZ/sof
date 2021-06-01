@@ -52,14 +52,14 @@ enum imx_mu_xsr {
 
 #endif
 /* Status Register */
-#define IMX_MU_xSR(type, index)	(type & IMX_MU_V2 ? 0x20 : index)
+#define IMX_MU_xSR(type, index)	(type & IMX_MU_V2 ? index : 0x20)
 #define IMX_MU_xSR_GIPn(type, x) (type & IMX_MU_V2 ? BIT(x) : BIT(28 + (3 - (x))))
 #define IMX_MU_xSR_RFn(type, x) (type & IMX_MU_V2 ? BIT(x) : BIT(24 + (3 - (x))))
 #define IMX_MU_xSR_TEn(type, x) (type & IMX_MU_V2 ? BIT(x) : BIT(20 + (3 - (x))))
 #define IMX_MU_xSR_BRDIP	BIT(9)
 
 /* Control Register */
-#define IMX_MU_xCR(type, index)	(type & IMX_MU_V2 ? 0x24 : index)
+#define IMX_MU_xCR(type, index)	(type & IMX_MU_V2 ? index : 0x24)
 /* General Purpose Interrupt Enable */
 #define IMX_MU_xCR_GIEn(type, x) (type & IMX_MU_V2 ? BIT(x) : BIT(28 + (3 - (x))))
 /* Receive Interrupt Enable */
@@ -82,10 +82,7 @@ static inline void imx_mu_write(uint32_t val, uint32_t reg)
 static inline uint32_t imx_mu_xcr_rmw(uint32_t type, uint32_t idx, uint32_t set, uint32_t clr)
 {
 	volatile uint32_t val;
-	int *ptr = (void *)0x1b000000;
 
-	*(ptr +4) = idx; *(ptr+3) = set;
-	*(ptr +5 ) = IMX_MU_xCR(type,idx);
 	val = imx_mu_read(IMX_MU_xCR(type, idx));
 	val &= ~clr;
 	val |= set;
