@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: BSD-3-Clause
 //
-// Copyright 2019 NXP
+// Copyright 2021 NXP
 //
-// Author: Daniel Baluta <daniel.baluta@nxp.com>
+// Author: Peng Zhang <peng.zhang_8@nxp.com>
 
 #include <sof/common.h>
 #include <sof/drivers/edma.h>
@@ -15,23 +15,21 @@
 extern struct dma_ops dummy_dma_ops;
 extern struct dma_ops edma_ops;
 
-const int edma0_ints[EDMA0_CHAN_MAX] = {
-	[EDMA0_ESAI_CHAN_RX] = EDMA0_ESAI_CHAN_RX_IRQ,
-	[EDMA0_ESAI_CHAN_TX] = EDMA0_ESAI_CHAN_TX_IRQ,
-	[EDMA0_SAI_CHAN_RX] = EDMA0_SAI_CHAN_RX_IRQ,
-	[EDMA0_SAI_CHAN_TX] = EDMA0_SAI_CHAN_TX_IRQ,
+const int edma2_ints[EDMA2_CHAN_MAX] = {
+	[0] = EDMA2_CHAN0_IRQ,
+	[1] = EDMA2_CHAN1_IRQ,
 };
 
 SHARED_DATA struct dma dma[PLATFORM_NUM_DMACS] = {
 {
 	.plat_data = {
-		.id		= DMA_ID_EDMA0,
+		.id		= DMA_ID_EDMA2,
 		.dir		= DMA_DIR_MEM_TO_DEV | DMA_DIR_DEV_TO_MEM,
-		.devs		= DMA_DEV_ESAI | DMA_DEV_SAI,
+		.devs		= DMA_DEV_SAI,
 		.base		= EDMA2_BASE,
 		.chan_size	= EDMA2_SIZE,
-		.channels	= 32,
-		.drv_plat_data	= edma0_ints,
+		.channels	= 8,
+		.drv_plat_data	= edma2_ints,
 	},
 	.ops	= &edma_ops,
 },

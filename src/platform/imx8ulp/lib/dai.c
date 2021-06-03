@@ -16,11 +16,11 @@
 
 static SHARED_DATA struct dai sai[] = {
 {
-	.index = 6,
+	.index = 5,
 	.plat_data = {
-		.base = SAI_6_BASE,
+		.base = SAI_5_BASE,
 		.fifo[SOF_IPC_STREAM_PLAYBACK] = {
-			.offset		= SAI_6_BASE + REG_SAI_TDR0,
+			.offset		= SAI_5_BASE + REG_SAI_TDR0,
 			/* use depth to model the HW FIFO size:
 			 * each channel includes a 64 x 32 bit FIFO
 			 * that can be accessed using Transmit or
@@ -31,13 +31,13 @@ static SHARED_DATA struct dai sai[] = {
 							 EDMA0_SAI_CHAN_TX),
 		},
 		.fifo[SOF_IPC_STREAM_CAPTURE] = {
-			.offset		= SAI_6_BASE + REG_SAI_RDR0,
+			.offset		= SAI_5_BASE + REG_SAI_RDR0,
 			.depth		= 64,  /* in 4 bytes words */
 			.handshake	= EDMA_HANDSHAKE(EDMA0_SAI_CHAN_RX_IRQ,
 							 EDMA0_SAI_CHAN_RX),
 		},
-		.dmamux_rx_num = DMAMUX2_SAI6_RX_NUM,
-		.dmamux_tx_num = DMAMUX2_SAI6_TX_NUM,
+		.dmamux_rx_num = DMAMUX2_SAI5_RX_NUM,
+		.dmamux_tx_num = DMAMUX2_SAI5_TX_NUM,
 	},
 	.drv = &sai_driver,
 },

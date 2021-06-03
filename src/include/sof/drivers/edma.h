@@ -96,4 +96,15 @@
 #define EDMA0_SAI_CHAN_RX_IRQ	349
 #define EDMA0_SAI_CHAN_TX_IRQ	349
 
+/* 8ulp edma2 */
+#define EDMA2_CHAN0_IRQ 6
+#define EDMA2_CHAN1_IRQ 7
+#define EDMA2_CHAN2_IRQ 8
+#define EDMA2_CHAN3_IRQ 9
+#define EDMA2_CHAN4_IRQ 10
+#define EDMA2_CHAN5_IRQ 11
+#define EDMA2_CHAN6_IRQ 12
+#define EDMA2_CHAN7_IRQ 13
+#define EDMA2_CHAN_MAX	8
+
 #endif /* __SOF_DRIVERS_EDMA_H__ */

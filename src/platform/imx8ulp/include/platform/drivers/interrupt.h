@@ -27,7 +27,7 @@
 #define IRQ_SAI7_NUM         25
 
 #define PLATFORM_IRQ_HW_NUM	XCHAL_NUM_INTERRUPTS
-#define PLATFORM_IRQ_CHILDREN	64 /* Each cascaded struct covers 64 IRQs */
+#define PLATFORM_IRQ_CHILDREN	0 /* Each cascaded struct covers 64 IRQs */
 /* IMX: Covered steer IRQs are modulo-64 aligned. */
 #define PLATFORM_IRQ_FIRST_CHILD  0
 

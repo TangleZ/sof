@@ -36,11 +36,13 @@ void platform_interrupt_init(void)
 
 void platform_interrupt_set(uint32_t irq)
 {
+	arch_interrupt_set(irq);
 	return;
 }
 
 void platform_interrupt_clear(uint32_t irq, uint32_t mask)
 {
+	arch_interrupt_clear(irq);
 	return;
 }
 

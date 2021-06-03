@@ -15,12 +15,12 @@
 /* max number of supported DMA channels */
 #define PLATFORM_MAX_DMA_CHAN	32
 
-#define DMA_ID_EDMA0	0
+#define DMA_ID_EDMA2	0
 #define DMA_ID_HOST	1
 
 #define dma_chan_irq(dma, chan) \
 	(((int *)dma->plat_data.drv_plat_data)[chan])
-#define dma_chan_irq_name(dma, chan) dma_irq_name(dma)
+#define dma_chan_irq_name(dma, chan) NULL
 
 #endif /* __PLATFORM_LIB_DMA_H__ */
 
