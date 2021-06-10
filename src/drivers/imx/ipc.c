@@ -45,7 +45,7 @@ static void irq_handler(void *arg)
 	/* Interrupt arrived, check src */
 	status = imx_mu_read(IMX_MU_xSR(IMX_MU_VERSION, IMX_MU_GSR));
 
-	tr_dbg(&ipc_tr, "ipc: irq isr 0x%x", status);
+	tr_info(&ipc_tr, "ipc: irq isr 0x%x", status);
 
 	/* reply message(done) from host */
 	if (status & IMX_MU_xSR_GIPn(IMX_MU_VERSION, 1)) {
@@ -70,12 +70,15 @@ static void irq_handler(void *arg)
 		imx_mu_xcr_rmw(IMX_MU_VERSION, IMX_MU_GIER, 0, IMX_MU_xCR_GIEn(IMX_MU_VERSION, 0));
 
 		/* Clear GP pending interrupt #0 */
-		imx_mu_xsr_rmw(IMX_MU_VERSION, IMX_MU_GCR, IMX_MU_xSR_GIPn(IMX_MU_VERSION, 0), 0);
+		imx_mu_xsr_rmw(IMX_MU_VERSION, IMX_MU_GSR, IMX_MU_xSR_GIPn(IMX_MU_VERSION, 0), 0);
 
 		interrupt_clear(PLATFORM_IPC_INTERRUPT);
 
 		ipc_schedule_process(ipc);
 	}
+	status = imx_mu_read(IMX_MU_xSR(IMX_MU_VERSION, IMX_MU_GSR));
+
+	tr_info(&ipc_tr, "check ipc: irq isr 0x%x", status);
 }
 
 enum task_state ipc_platform_do_cmd(void *data)
@@ -97,6 +100,7 @@ void ipc_platform_complete_cmd(void *data)
 {
 	struct ipc *ipc = data;
 
+	tr_info(&ipc_tr, "ipc_platform_complete_cmd");
 	/* enable GP interrupt #0 - accept new messages */
 	imx_mu_xcr_rmw(IMX_MU_VERSION, IMX_MU_GIER, IMX_MU_xCR_GIEn(IMX_MU_VERSION, 0), 0);
 
@@ -113,6 +117,7 @@ void ipc_platform_complete_cmd(void *data)
 	}
 
 	platform_shared_commit(ipc, sizeof(*ipc));
+	tr_info(&ipc_tr, "ipc_platform_complete_cmd return");
 }
 
 int ipc_platform_send_msg(struct ipc_msg *msg)

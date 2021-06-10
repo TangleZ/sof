@@ -27,14 +27,14 @@ static SHARED_DATA struct dai sai[] = {
 			 * Receive Data Registers
 			 */
 			.depth		= 64,  /* in 4 bytes words */
-			.handshake	= EDMA_HANDSHAKE(EDMA0_SAI_CHAN_TX_IRQ,
-							 EDMA0_SAI_CHAN_TX),
+			.handshake	= EDMA_HANDSHAKE(EDMA2_CHAN0_IRQ,
+							 EDMA2_SAI_CHAN_TX),
 		},
 		.fifo[SOF_IPC_STREAM_CAPTURE] = {
 			.offset		= SAI_5_BASE + REG_SAI_RDR0,
 			.depth		= 64,  /* in 4 bytes words */
-			.handshake	= EDMA_HANDSHAKE(EDMA0_SAI_CHAN_RX_IRQ,
-							 EDMA0_SAI_CHAN_RX),
+			.handshake	= EDMA_HANDSHAKE(EDMA2_CHAN1_IRQ,
+							 EDMA2_SAI_CHAN_RX),
 		},
 		.dmamux_rx_num = DMAMUX2_SAI5_RX_NUM,
 		.dmamux_tx_num = DMAMUX2_SAI5_TX_NUM,
