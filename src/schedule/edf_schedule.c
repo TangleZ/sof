@@ -43,6 +43,7 @@ static void schedule_edf(void *data);
 
 static void schedule_edf_task_run(struct task *task, void *data)
 {
+	//tr_info(&edf_tr, "schedule_edf_task_run");
 	while (1) {
 		/* execute task run function and remove task from the list
 		 * only if completed
@@ -65,7 +66,7 @@ static void edf_scheduler_run(void *data)
 	uint64_t deadline;
 	uint32_t flags;
 
-	tr_dbg(&edf_tr, "edf_scheduler_run()");
+	//tr_info(&edf_tr, "edf_scheduler_run()");
 
 	irq_local_disable(flags);
 
@@ -108,6 +109,7 @@ static int schedule_edf_task(void *data, struct task *task, uint64_t start,
 	(void) period; /* not used */
 	(void) start; /* not used */
 
+	//tr_info(&edf_tr, "scheduler_edf_task()");
 	irq_local_disable(flags);
 
 	/* not enough MCPS to complete */
@@ -128,6 +130,7 @@ static int schedule_edf_task(void *data, struct task *task, uint64_t start,
 
 	schedule_edf(data);
 
+	//tr_info(&edf_tr, "return scheduler_edf_task()");
 	return 0;
 }
 
@@ -138,6 +141,7 @@ int schedule_task_init_edf(struct task *task, const struct sof_uuid_entry *uid,
 	struct edf_task_pdata *edf_pdata = NULL;
 	int ret = 0;
 
+	//tr_info(&edf_tr, "schedule_task_init_edf()");
 	ret = schedule_task_init(task, uid, SOF_SCHEDULE_EDF, 0, ops->run, data,
 				 core, flags);
 	if (ret < 0)
@@ -185,7 +189,7 @@ static int schedule_edf_task_running(void *data, struct task *task)
 	struct edf_task_pdata *edf_pdata = edf_sch_get_pdata(task);
 	uint32_t flags;
 
-	tr_dbg(&edf_tr, "schedule_edf_task_running()");
+	//tr_info(&edf_tr, "schedule_edf_task_running()");
 
 	irq_local_disable(flags);
 
@@ -201,7 +205,7 @@ static int schedule_edf_task_complete(void *data, struct task *task)
 {
 	uint32_t flags;
 
-	tr_dbg(&edf_tr, "schedule_edf_task_complete()");
+	//tr_info(&edf_tr, "schedule_edf_task_complete()");
 
 	irq_local_disable(flags);
 
@@ -219,7 +223,7 @@ static int schedule_edf_task_cancel(void *data, struct task *task)
 {
 	uint32_t flags;
 
-	tr_dbg(&edf_tr, "schedule_edf_task_cancel()");
+	//tr_info(&edf_tr, "schedule_edf_task_cancel()");
 
 	irq_local_disable(flags);
 
@@ -239,6 +243,7 @@ static int schedule_edf_task_free(void *data, struct task *task)
 	struct edf_task_pdata *edf_pdata = edf_sch_get_pdata(task);
 	uint32_t flags;
 
+	//tr_info(&edf_tr, "schedule_edf_task_free");
 	irq_local_disable(flags);
 
 	task->state = SOF_TASK_STATE_FREE;
@@ -257,7 +262,7 @@ int scheduler_init_edf(void)
 {
 	struct edf_schedule_data *edf_sch;
 
-	tr_info(&edf_tr, "edf_scheduler_init()");
+	//tr_info(&edf_tr, "edf_scheduler_init()");
 
 	edf_sch = rzalloc(SOF_MEM_ZONE_SYS, 0, SOF_MEM_CAPS_RAM,
 			  sizeof(*edf_sch));
@@ -285,6 +290,7 @@ static void scheduler_free_edf(void *data)
 {
 	struct edf_schedule_data *edf_sch = data;
 	uint32_t flags;
+	//tr_info(&edf_tr, "scheduler_free_edf");
 
 	irq_local_disable(flags);
 
@@ -302,6 +308,7 @@ static void scheduler_free_edf(void *data)
 
 static void schedule_edf(void *data)
 {
+	//tr_info(&edf_tr, "schedule_edf()");
 	struct edf_schedule_data *edf_sch = data;
 
 	interrupt_set(edf_sch->irq);

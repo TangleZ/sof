@@ -53,6 +53,7 @@ static void dma_multi_chan_domain_irq_handler(void *data)
 {
 	struct dma_domain_data *domain_data = data;
 
+	//tr_info(&ll_tr, "dma_multi_chan_domain_irq_handler()");
 	/* just call registered handler */
 	domain_data->handler(domain_data->arg);
 

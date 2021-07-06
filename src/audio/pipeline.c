@@ -753,6 +753,8 @@ pipeline_should_report_enodata_on_trigger(struct comp_dev *rsrc,
 	return false;
 }
 
+int count=1;
+
 static int pipeline_comp_trigger(struct comp_dev *current,
 				 struct comp_buffer *calling_buf,
 				 struct pipeline_walk_context *ctx, int dir)
@@ -764,14 +766,15 @@ static int pipeline_comp_trigger(struct comp_dev *current,
 					    ppl_data->start->pipeline);
 	int err;
 
-	pipe_dbg(current->pipeline, "pipeline_comp_trigger(), current->comp.id = %u, dir = %u",
-		 dev_comp_id(current), dir);
+	pipe_info(current->pipeline, "pipeline_comp_trigger(), current->comp.id = %u, dir = %u, count %d",
+		 dev_comp_id(current), dir, count);
+	count++;
 
 	/* trigger should propagate to the connected pipelines,
 	 * which need to be scheduled together
 	 */
 	if (!is_single_ppl && !is_same_sched) {
-		pipe_dbg(current->pipeline, "pipeline_comp_trigger(), current is from another pipeline");
+		pipe_info(current->pipeline, "pipeline_comp_trigger(), current is from another pipeline");
 
 		if (pipeline_should_report_enodata_on_trigger(current, ctx,
 							      dir))
@@ -780,6 +783,7 @@ static int pipeline_comp_trigger(struct comp_dev *current,
 		return 0;
 	}
 
+	//pipe_info(current->pipeline, "is shared %d, cpu is me %d\n", current->is_shared, cpu_is_me(current->comp.core));
 	/* send command to the component and update pipeline state */
 	err = comp_trigger(current, ppl_data->cmd);
 	if (err < 0 || err == PPL_STATUS_PATH_STOP)
@@ -845,8 +849,10 @@ static void pipeline_schedule_triggered(struct pipeline_walk_context *ctx,
 		switch (cmd) {
 		case COMP_TRIGGER_PAUSE:
 		case COMP_TRIGGER_STOP:
+			pipe_info(p, "pipeline schedule trigger stop...");
 			pipeline_schedule_cancel(p);
 			p->status = COMP_STATE_PAUSED;
+			pipe_info(p, "pipeline schedule trigger stop return");
 			break;
 		case COMP_TRIGGER_RELEASE:
 		case COMP_TRIGGER_START:
@@ -862,6 +868,7 @@ static void pipeline_schedule_triggered(struct pipeline_walk_context *ctx,
 	}
 
 	irq_local_enable(flags);
+	return;
 }
 
 /* trigger pipeline */
@@ -901,6 +908,7 @@ int pipeline_trigger(struct pipeline *p, struct comp_dev *host, int cmd)
 
 	pipeline_schedule_triggered(&walk_ctx, cmd);
 
+	pipe_info(p, "pipe trigger return");
 	return ret;
 }
 
@@ -1215,7 +1223,7 @@ static enum task_state pipeline_task(void *arg)
 	struct pipeline *p = arg;
 	int err;
 
-	pipe_dbg(p, "pipeline_task()");
+	//pipe_info(p, "pipeline_task(), task %p", &(p->pipe_task));
 
 	/* are we in xrun ? */
 	if (p->xrun_bytes) {

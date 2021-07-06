@@ -640,7 +640,9 @@ int ipc_comp_dai_config(struct ipc *ipc, struct sof_ipc_dai_config *config)
 			 */
 			if (dai->dai_index == config->dai_index &&
 			    dai->type == config->type) {
+				tr_info(&ipc_tr, "comp_dai_config");
 				ret = comp_dai_config(icd->cd, config);
+				tr_info(&ipc_tr, "comp_dai_config return");
 				platform_shared_commit(icd, sizeof(*icd));
 				if (ret < 0)
 					break;

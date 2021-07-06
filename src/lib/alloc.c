@@ -579,11 +579,11 @@ static void trace_heap_blocks(struct mm_heap *heap)
 	struct block_map *block_map;
 	int i;
 
-	tr_err(&mem_tr, "heap: 0x%x size %d blocks %d caps 0x%x", heap->heap,
+	/*tr_info(&mem_tr, "heap: 0x%x size %d blocks %d caps 0x%x", heap->heap,
 	       heap->size, heap->blocks, heap->caps);
-	tr_err(&mem_tr, " used %d free %d", heap->info.used,
+	tr_info(&mem_tr, " used %d free %d", heap->info.used,
 	       heap->info.free);
-
+*/
 	for (i = 0; i < heap->blocks; i++) {
 		block_map = &heap->map[i];
 
@@ -1115,23 +1115,23 @@ void heap_trace(struct mm_heap *heap, int size)
 	int j;
 
 	for (i = 0; i < size; i++) {
-		tr_info(&mem_tr, " heap: 0x%x size %d blocks %d caps 0x%x",
+		/*tr_info(&mem_tr, " heap: 0x%x size %d blocks %d caps 0x%x",
 			heap->heap, heap->size, heap->blocks,
 			heap->caps);
 		tr_info(&mem_tr, "  used %d free %d", heap->info.used,
 			heap->info.free);
-
+*/
 		/* map[j]'s base is calculated based on map[j-1] */
 		for (j = 1; j < heap->blocks; j++) {
 			current_map = &heap->map[j];
-
+/*
 			tr_info(&mem_tr, "  block %d base 0x%x size %d",
 				j, current_map->base,
 				current_map->block_size);
 			tr_info(&mem_tr, "   count %d free %d",
 				current_map->count,
 				current_map->free_count);
-
+*/
 			platform_shared_commit(current_map,
 					       sizeof(*current_map));
 		}
@@ -1148,12 +1148,9 @@ void heap_trace_all(int force)
 
 	/* has heap changed since last shown */
 	if (memmap->heap_trace_updated || force) {
-		tr_info(&mem_tr, "heap: buffer status");
 		heap_trace(memmap->buffer, PLATFORM_HEAP_BUFFER);
-		tr_info(&mem_tr, "heap: runtime status");
 		heap_trace(memmap->runtime, PLATFORM_HEAP_RUNTIME);
 #if CONFIG_CORE_COUNT > 1
-		tr_info(&mem_tr, "heap: runtime shared status");
 		heap_trace(memmap->runtime_shared, PLATFORM_HEAP_RUNTIME_SHARED);
 #endif
 	}

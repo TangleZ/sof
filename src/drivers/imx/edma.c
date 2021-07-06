@@ -91,7 +91,7 @@ static struct dma_chan_data *edma_channel_get(struct dma *dma,
 	uint32_t flags;
 	struct dma_chan_data *channel;
 
-	tr_dbg(&edma_tr, "EDMA: channel_get(%d)", req_chan);
+	tr_info(&edma_tr, "EDMA: channel_get(%d)", req_chan);
 
 	spin_lock_irq(&dma->lock, flags);
 	if (req_chan >= dma->plat_data.channels) {
@@ -171,7 +171,6 @@ static int edma_pause(struct dma_chan_data *channel)
 		return -EINVAL;
 
 	channel->status = COMP_STATE_PAUSED;
-
 	/* Disable HW requests */
 	dma_chan_reg_update_bits(channel, EDMA_CH_CSR,
 				 EDMA_CH_CSR_ERQ_EARQ, 0);
@@ -209,6 +208,7 @@ static int edma_copy(struct dma_chan_data *channel, int bytes, uint32_t flags)
 		.channel = channel,
 		.elem.size = bytes,
 	};
+	//tr_info(&edma_tr, "EDMA: copy");
 
 	notifier_event(channel, NOTIFIER_ID_DMA_COPY,
 		       NOTIFIER_TARGET_CORE_LOCAL, &next, sizeof(next));
@@ -266,6 +266,7 @@ static int edma_validate_nonsg_config(struct dma_sg_elem_array *sgelems,
  * \param[in] sgelems The scatter-gather elems, from the config
  * \param[in] src_width Width of transfer on source end
  * \param[in] dest_width Width of transfer on destination end
+ * \param[in] srcid eventid for 8ulp
  * \return 0 on success, negative on error
  *
  * Computes the TCD to be uploaded to the hardware registers. In the
@@ -301,6 +302,7 @@ static int edma_setup_tcd(struct dma_chan_data *channel, int16_t soff,
 
 	sbase = sgelems->elems[0].src;
 	dbase = sgelems->elems[0].dest;
+	tr_info(&edma_tr, "edma_setup_tcd, sbase %x, dbase %x", sbase, dbase);
 	total_size = 2 * sgelems->elems[0].size;
 	/* TODO more flexible elem_count and elem_size
 	 * calculations
@@ -329,7 +331,9 @@ static int edma_setup_tcd(struct dma_chan_data *channel, int16_t soff,
 		if (!dma_chan_reg_read(channel, EDMA_CH_MUX))
 			dma_chan_reg_write(channel, EDMA_CH_MUX, srcid);
 	}
+	//tr_info(&edma_tr, "edma_setup_tcd B");
 	/* Configure the in-hardware TCD */
+	sbase = 0x8e000000 + (sbase - 0x1a000000);
 	dma_chan_reg_write(channel, EDMA_TCD_SADDR, sbase);
 	dma_chan_reg_write16(channel, EDMA_TCD_SOFF, soff);
 	dma_chan_reg_write16(channel, EDMA_TCD_ATTR, rc);
@@ -353,6 +357,7 @@ static int edma_set_config(struct dma_chan_data *channel,
 {
 	int16_t soff = 0;
 	int16_t doff = 0;
+	int ret;
 
 	tr_info(&edma_tr, "EDMA: set config");
 
@@ -382,10 +387,14 @@ static int edma_set_config(struct dma_chan_data *channel,
 		return -EINVAL;
 	}
 
-	return edma_setup_tcd(channel, soff, doff, config->cyclic,
+	tr_info(&edma_tr, "EDMA: channel index %d, soff %d, doff %d, srcid %d",
+			channel->index, soff, doff, channel->srcid);
+	ret = edma_setup_tcd(channel, soff, doff, config->cyclic,
 			      config->scatter, config->irq_disabled,
 			      &config->elem_array, config->src_width,
 			      config->dest_width, config->burst_elems, channel->srcid);
+	tr_info(&edma_tr, "EDMA: set config return");
+	return ret;
 }
 
 /* restore DMA context after leaving D3 */
@@ -455,6 +464,7 @@ static int edma_interrupt(struct dma_chan_data *channel, enum dma_irq_cmd cmd)
 	case DMA_IRQ_STATUS_GET:
 		return dma_chan_reg_read(channel, EDMA_CH_INT);
 	case DMA_IRQ_CLEAR:
+		//tr_info(&edma_tr, "EDMA interrupt clear, channel idx %d", channel->index);
 		dma_chan_reg_write(channel, EDMA_CH_INT, 1);
 		return 0;
 	case DMA_IRQ_MASK:

@@ -94,6 +94,7 @@ struct sof_ipc_cmd_hdr *mailbox_validate(void)
 	/* read component values from the inbox */
 	mailbox_hostbox_read(hdr, SOF_IPC_MSG_MAX_SIZE, 0, sizeof(*hdr));
 
+//	tr_info(&ipc_tr, "mailbox_validate");
 	/* validate component header */
 	if (hdr->size < sizeof(*hdr) || hdr->size > SOF_IPC_MSG_MAX_SIZE) {
 		tr_err(&ipc_tr, "ipc: invalid size 0x%x", hdr->size);
@@ -210,7 +211,7 @@ static int ipc_stream_pcm_params(uint32_t stream)
 	if (!cpu_is_me(pcm_dev->core))
 		return ipc_process_on_core(pcm_dev->core);
 
-	tr_dbg(&ipc_tr, "ipc: comp %d -> params", pcm_params.comp_id);
+	tr_info(&ipc_tr, "ipc: comp %d -> params", pcm_params.comp_id);
 
 	/* sanity check comp */
 	if (!pcm_dev->cd->pipeline) {
@@ -294,6 +295,7 @@ pipe_params:
 	reply.posn_offset = pcm_dev->cd->pipeline->posn_offset;
 	mailbox_hostbox_write(0, &reply, sizeof(reply));
 	platform_shared_commit(pcm_dev, sizeof(*pcm_dev));
+
 	return 1;
 
 error:
@@ -412,7 +414,7 @@ static int ipc_stream_trigger(uint32_t header)
 	if (!cpu_is_me(pcm_dev->core))
 		return ipc_process_on_core(pcm_dev->core);
 
-	tr_dbg(&ipc_tr, "ipc: comp %d -> trigger cmd 0x%x",
+	tr_info(&ipc_tr, "ipc: comp %d -> trigger cmd 0x%x",
 	       stream.comp_id, ipc_cmd);
 
 	switch (ipc_cmd) {
@@ -445,6 +447,8 @@ static int ipc_stream_trigger(uint32_t header)
 
 	platform_shared_commit(pcm_dev, sizeof(*pcm_dev));
 
+	if (ipc_cmd == SOF_IPC_STREAM_TRIG_STOP)
+		tr_info(&ipc_tr, "ipc stream trigger return");
 	return ret;
 }
 
@@ -452,6 +456,7 @@ static int ipc_glb_stream_message(uint32_t header)
 {
 	uint32_t cmd = iCS(header);
 
+	tr_info(&ipc_tr, "ipc: glb stream msg cmd 0x%x", cmd);
 	switch (cmd) {
 	case SOF_IPC_STREAM_PCM_PARAMS:
 		return ipc_stream_pcm_params(header);
@@ -470,6 +475,8 @@ static int ipc_glb_stream_message(uint32_t header)
 		tr_err(&ipc_tr, "ipc: unknown stream cmd 0x%x", cmd);
 		return -EINVAL;
 	}
+	if (cmd == SOF_IPC_STREAM_TRIG_STOP)
+		tr_info(&ipc_tr, "ipc: glb stream msg cmd 0x%x", cmd);
 }
 
 /*
@@ -715,6 +722,7 @@ static int ipc_dma_trace_config(uint32_t header)
 	return 0;
 #endif
 
+	tr_info(&ipc_tr, "ipc dma trace config...");
 #if CONFIG_HOST_PTABLE
 	err = ipc_process_host_buffer(ipc, &params.buffer,
 				      SOF_IPC_STREAM_CAPTURE,
@@ -723,12 +731,14 @@ static int ipc_dma_trace_config(uint32_t header)
 	if (err < 0)
 		goto error;
 
+	tr_info(&ipc_tr, "ipc dma trace config1...");
 	err = dma_trace_host_buffer(dmat, &elem_array, ring_size);
 	if (err < 0) {
 		tr_err(&ipc_tr, "ipc: trace failed to set host buffers %d",
 		       err);
 		goto error;
 	}
+	tr_info(&ipc_tr, "ipc dma trace config2...");
 #else
 	/* stream tag of capture stream for DMA trace */
 	dmat->stream_tag = params.stream_tag;
@@ -1400,6 +1410,7 @@ void ipc_cmd(struct sof_ipc_cmd_hdr *hdr)
 
 	type = iGS(hdr->cmd);
 
+	tr_info(&ipc_tr, "ipc_cmd %x.", type);
 	switch (type) {
 	case SOF_IPC_GLB_REPLY:
 		ret = 0;
@@ -1448,7 +1459,7 @@ void ipc_cmd(struct sof_ipc_cmd_hdr *hdr)
 	platform_shared_commit(hdr, hdr->size);
 
 out:
-	tr_dbg(&ipc_tr, "ipc: last request 0x%x returned %d", type, ret);
+	tr_info(&ipc_tr, "ipc: last request 0x%x returned %d", type, ret);
 
 	/* if ret > 0, reply created and copied by cmd() */
 	if (ret <= 0) {
@@ -1482,6 +1493,7 @@ void ipc_msg_send(struct ipc_msg *msg, void *data, bool high_priority)
 			goto out;
 	}
 
+	tr_info(&ipc_tr, "ipc: msg->list %x, msp->list next %x, ipc list %x", (void *)&msg->list, msg->list.next, (void *)&ipc->msg_list);
 	/* add to queue unless already there */
 	if (list_is_empty(&msg->list)) {
 		if (high_priority)

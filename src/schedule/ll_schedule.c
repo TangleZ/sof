@@ -109,7 +109,7 @@ static void schedule_ll_tasks_execute(struct ll_schedule_data *sch)
 		if (task->state != SOF_TASK_STATE_PENDING)
 			continue;
 
-		tr_dbg(&ll_tr, "task %p %pU being started...", task, task->uid);
+		//tr_info(&ll_tr, "task %p %pU being started...", task, task->uid);
 
 		task->state = task_run(task);
 

@@ -89,6 +89,7 @@ static int ipc_get_page_descriptors(struct dma *dmac, uint8_t *page_table,
 	struct dma_chan_data *chan;
 	uint32_t dma_copy_align;
 	int ret = 0;
+	//int *ptr = (void*)0x1aff1000;
 
 	/* get DMA channel from DMAC */
 	chan = dma_channel_get(dmac, 0);
@@ -109,6 +110,7 @@ static int ipc_get_page_descriptors(struct dma *dmac, uint8_t *page_table,
 	elem.dest = (uintptr_t)page_table;
 	elem.src = ring->phy_addr;
 
+	tr_err(&ipc_tr, "ipc_get_page_descriptors, src %x, dest %x", elem.src, elem.dest);
 	/* source buffer size is always PAGE_SIZE bytes */
 	/* 20 bits for each page, round up to minimum DMA copy size */
 	ret = dma_get_attribute(dmac, DMA_ATTR_COPY_ALIGNMENT, &dma_copy_align);
@@ -121,12 +123,14 @@ static int ipc_get_page_descriptors(struct dma *dmac, uint8_t *page_table,
 	config.elem_array.elems = &elem;
 	config.elem_array.count = 1;
 
+	tr_err(&ipc_tr, "ipc_get_page_descriptors(): dma_set_config()");
 	ret = dma_set_config(chan, &config);
 	if (ret < 0) {
 		tr_err(&ipc_tr, "ipc_get_page_descriptors(): dma_set_config() failed");
 		goto out;
 	}
 
+	tr_info(&ipc_tr, "5");
 	/* start the copy of page table to DSP */
 	ret = dma_copy(chan, elem.size, DMA_COPY_ONE_SHOT | DMA_COPY_BLOCKING);
 	if (ret < 0) {
@@ -134,9 +138,11 @@ static int ipc_get_page_descriptors(struct dma *dmac, uint8_t *page_table,
 		goto out;
 	}
 
+	tr_info(&ipc_tr, "6");
 	/* compressed page tables now in buffer at _ipc->page_table */
 out:
 	dma_channel_put(chan);
+	tr_info(&ipc_tr, "7");
 	return ret;
 }
 
@@ -149,9 +155,11 @@ int ipc_process_host_buffer(struct ipc *ipc,
 	struct ipc_data_host_buffer *data_host_buffer;
 	int err;
 
+	/* data host buffer is local */
 	data_host_buffer = ipc_platform_get_host_buffer(ipc);
 	dma_sg_init(elem_array);
 
+	tr_info(&ipc_tr, "AAA");
 	/* use DMA to read in compressed page table ringbuffer from host */
 	err = ipc_get_page_descriptors(data_host_buffer->dmac,
 				       data_host_buffer->page_table,
@@ -161,6 +169,7 @@ int ipc_process_host_buffer(struct ipc *ipc,
 		goto error;
 	}
 
+	tr_info(&ipc_tr, "BBB");
 	*ring_size = ring->size;
 
 	err = ipc_parse_page_descriptors(data_host_buffer->page_table,

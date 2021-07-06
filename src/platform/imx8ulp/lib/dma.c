@@ -16,8 +16,8 @@ extern struct dma_ops dummy_dma_ops;
 extern struct dma_ops edma_ops;
 
 const int edma2_ints[EDMA2_CHAN_MAX] = {
-	[0] = EDMA2_CHAN0_IRQ,
-	[1] = EDMA2_CHAN1_IRQ,
+	[EDMA2_CHAN0] = EDMA2_CHAN0_IRQ,
+	[EDMA2_CHAN1] = EDMA2_CHAN1_IRQ,
 };
 
 SHARED_DATA struct dma dma[PLATFORM_NUM_DMACS] = {

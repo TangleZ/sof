@@ -116,7 +116,7 @@ static void dai_dma_cb(void *arg, enum notify_id type, void *data)
 	void *buffer_ptr;
 	int ret;
 
-	comp_dbg(dev, "dai_dma_cb()");
+	//comp_info(dev, "dai_dma_cb()");
 
 	next->status = DMA_CB_STATUS_RELOAD;
 
@@ -354,7 +354,7 @@ static int dai_playback_params(struct comp_dev *dev, uint32_t period_bytes,
 		fifo = dai_get_fifo(dd->dai, dev->direction,
 				    dd->stream_id);
 
-		comp_info(dev, "dai_playback_params() fifo 0x%x", fifo);
+		comp_info(dev, "dai_playback_params() fifo 0x%x, src %x", fifo, dd->dma_buffer->stream.addr);
 
 		err = dma_sg_alloc(&config->elem_array, SOF_MEM_ZONE_RUNTIME,
 				   config->direction,
@@ -433,6 +433,20 @@ static int dai_capture_params(struct comp_dev *dev, uint32_t period_bytes,
 	return 0;
 }
 
+static int dai_comp_hw_params(struct comp_dev *dev, struct sof_ipc_stream_params *params)
+{
+	struct dai_data *dd = comp_get_drvdata(dev);
+	int ret;
+	comp_info(dev, "dai_comp_hw_params()");
+	/* configure hw dai stream params */
+	ret = dai_hw_params(dd->dai, params);
+	if (ret < 0) {
+	comp_err(dev, "dai_comp_hw_params(): dai_hw_params failed ret %d", ret);
+	return ret;
+	}
+	return 0;
+}
+
 static int dai_params(struct comp_dev *dev,
 		      struct sof_ipc_stream_params *params)
 {
@@ -453,6 +467,12 @@ static int dai_params(struct comp_dev *dev,
 	if (err < 0) {
 		comp_err(dev, "dai_params(): pcm params verification failed.");
 		return -EINVAL;
+	}
+
+	err = dai_comp_hw_params(dev, params);
+	if (err < 0) {
+		comp_err(dev, "dai_params(): dai_comp_hw_params failed err %d", err);
+		return err;
 	}
 
 	if (dev->direction == SOF_IPC_STREAM_PLAYBACK)
@@ -735,7 +755,7 @@ static int dai_comp_trigger(struct comp_dev *dev, int cmd)
 
 	/* DAI not in a group, use normal trigger */
 	if (!group) {
-		comp_dbg(dev, "dai_comp_trigger(), non-atomic trigger");
+		comp_info(dev, "dai_comp_trigger(), non-atomic trigger");
 		return dai_comp_trigger_internal(dev, cmd);
 	}
 
@@ -970,7 +990,9 @@ static int dai_config(struct comp_dev *dev, struct sof_ipc_dai_config *config)
 	case SOF_DAI_IMX_SAI:
 		handshake = dai_get_handshake(dd->dai, dai->direction,
 					      dd->stream_id);
+		comp_info(dev, "dai_config(), handshake = %d", handshake);
 		channel = EDMA_HS_GET_CHAN(handshake);
+		comp_info(dev, "dai_config(), channel = %d", channel);
 
 		dd->config.burst_elems =
 			dd->dai->plat_data.fifo[dai->direction].depth;

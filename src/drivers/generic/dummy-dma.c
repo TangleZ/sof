@@ -98,6 +98,8 @@ static ssize_t dummy_dma_copy_crt_elem(struct dma_chan_pdata *pdata,
 	remaining_size = orig_size - pdata->elem_progress;
 	copy_size = MIN(remaining_size, bytes);
 
+	//tr_info(&ddma_tr,"rptr %x, wptr %x", (uint32_t)rptr, (uint32_t)wptr);
+//	tr_info(&ddma_tr,"orig_size %x, remaining_size %x, copy_size %x", orig_size, remaining_size, copy_size);
 	/* On playback, invalidate host buffer (it may lie in a cached area).
 	 * Otherwise we could be playing stale data.
 	 * On capture this should be safe as host.c does a writeback before
@@ -109,6 +111,7 @@ static ssize_t dummy_dma_copy_crt_elem(struct dma_chan_pdata *pdata,
 	ret = memcpy_s((void *)wptr, remaining_size, (void *)rptr, copy_size);
 	assert(!ret);
 
+//	tr_info(&ddma_tr, "memcpys done");
 	/* On capture, writeback the host buffer (it may lie in a cached area).
 	 * On playback, also writeback because host.c does an invalidate to
 	 * be able to use the data transferred by the DMA.
@@ -191,6 +194,7 @@ static ssize_t dummy_dma_do_copies(struct dma_chan_pdata *pdata, int bytes)
 	ssize_t copied = 0;
 	ssize_t crt_copied;
 
+	//tr_info(&ddma_tr,"dummy copies, avail %x", avail);
 	if (!avail)
 		return -ENODATA;
 
@@ -205,6 +209,7 @@ static ssize_t dummy_dma_do_copies(struct dma_chan_pdata *pdata, int bytes)
 		bytes -= crt_copied;
 		copied += crt_copied;
 	}
+	//tr_info(&ddma_tr,"dummy copies return");
 
 	return copied;
 }
