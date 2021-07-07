@@ -80,6 +80,7 @@ static enum task_state trace_work(void *data)
 	/* DMA trace copying is working */
 	d->copy_in_progress = 1;
 
+	//tr_info(&dt_tr, "trace_work(): dma_copy_to_host_nowait, host off %d", d->posn.host_offset);
 	/* copy this section to host */
 	size = dma_copy_to_host_nowait(&d->dc, config, d->posn.host_offset,
 				       buffer->r_ptr, size);
@@ -254,6 +255,7 @@ static int dma_trace_start(struct dma_trace_data *d)
 	config.dest_width = sizeof(uint32_t);
 	config.cyclic = 0;
 
+	tr_info(&dt_tr, "dma_trace_start()");
 	err = dma_sg_alloc(&config.elem_array, SOF_MEM_ZONE_SYS,
 			   config.direction,
 			   elem_num, elem_size, elem_addr, 0);

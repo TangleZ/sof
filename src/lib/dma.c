@@ -178,6 +178,8 @@ int dma_sg_alloc(struct dma_sg_elem_array *elem_array,
 			elem_array->elems[i].dest = dma_buffer_addr;
 			break;
 		}
+		tr_info(&dma_tr, "dma_sg_alloc(), src = %p, dest = %x",
+			elem_array->elems[i].src, elem_array->elems[i].dest);
 
 		dma_buffer_addr += buffer_bytes;
 	}

@@ -84,6 +84,14 @@ static void sai_start(struct dai *dai, int direction)
 	dai_update_bits(dai, REG_SAI_MCTL, REG_SAI_MCTL_MCLK_EN,
 			REG_SAI_MCTL_MCLK_EN);
 #endif
+	//tmp
+	dai_write(dai, REG_SAI_XCR1(direction), 0x0000007A);
+	dai_write(dai, REG_SAI_XCR2(direction), 0x05000017);
+	dai_write(dai, REG_SAI_XCR3(direction), 0x00010000);
+	dai_write(dai, REG_SAI_XCR4(direction), 0x08010039);
+	dai_write(dai, REG_SAI_XCR5(direction), 0x0F0F0F00);
+	dai_write(dai, REG_SAI_XMR(direction), 0xFFFFFFFE);
+	dai_write(dai, REG_SAI_XCSR(direction), 0x50100f01);
 
 	/* transmit/receive data channel enable */
 	dai_update_bits(dai, REG_SAI_XCR3(direction),
@@ -92,6 +100,9 @@ static void sai_start(struct dai *dai, int direction)
 	/* transmitter/receiver enable */
 	dai_update_bits(dai, REG_SAI_XCSR(direction),
 			REG_SAI_CSR_TERE, REG_SAI_CSR_TERE);
+
+	//tmp
+	//interrupt_enable(IRQ_SAI5_NUM, dai);
 }
 
 static void sai_stop(struct dai *dai, int direction)
@@ -100,7 +111,6 @@ static void sai_stop(struct dai *dai, int direction)
 
 	uint32_t xcsr = 0U;
 	int ret = 0;
-
 	/* Disable DMA request */
 	dai_update_bits(dai, REG_SAI_XCSR(direction),
 			REG_SAI_CSR_FRDE, 0);
@@ -139,7 +149,6 @@ static void sai_stop(struct dai *dai, int direction)
 						      REG_SAI_CSR_TERE, 0, 100);
 		}
 	}
-
 	if (ret < 0)
 		dai_warn(dai, "sai: poll for register delay failed");
 }
@@ -154,11 +163,9 @@ static int sai_context_restore(struct dai *dai)
 	return 0;
 }
 
-static inline int sai_set_config(struct dai *dai, struct ipc_config_dai *common_config,
-				 void *spec_config)
+static inline int sai_set_config(struct dai *dai, struct sof_ipc_dai_config *config)
 {
 	dai_info(dai, "SAI: sai_set_config");
-	struct sof_ipc_dai_config *config = spec_config;
 	uint32_t val_cr2 = 0, val_cr4 = 0;
 	uint32_t mask_cr2 = 0, mask_cr4 = 0;
 	struct sai_pdata *sai = dai_get_drvdata(dai);
@@ -310,6 +317,15 @@ static int sai_trigger(struct dai *dai, int cmd, int direction)
 	return 0;
 }
 
+#if 0
+static void sai_irq_handler(void *args)
+{
+	struct dai *dai = (struct dai*)args;
+	dai_info(dai, "sai irq handler");
+	return;
+}
+#endif
+
 static int sai_probe(struct dai *dai)
 {
 	struct sai_pdata *sai;
@@ -352,6 +368,8 @@ static int sai_probe(struct dai *dai)
 	dai_write(dai, REG_SAI_RCR5, 0U);
 	dai_write(dai, REG_SAI_RMR,  0U);
 
+	// tmp
+	//interrupt_register(IRQ_SAI5_NUM, sai_irq_handler, dai);
 	return 0;
 }
 

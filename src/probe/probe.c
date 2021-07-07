@@ -142,6 +142,7 @@ static int probe_dma_init(struct probe_dma_ext *dma, uint32_t direction)
 	if (err < 0)
 		return err;
 
+	tr_info(&pr_tr, "probe_dma_init, elem_addr %x", elem_addr);
 	elem_addr = (uint32_t)dma->dmapb.addr;
 
 	config.direction = direction;

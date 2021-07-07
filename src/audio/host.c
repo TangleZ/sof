@@ -133,7 +133,7 @@ static void host_update_position(struct comp_dev *dev, uint32_t bytes)
 	struct comp_buffer *source;
 	struct comp_buffer *sink;
 	int ret;
-
+	static int count = 0;
 
 	if (dev->direction == SOF_IPC_STREAM_PLAYBACK)
 		ret = dma_buffer_copy_from(hd->dma_buffer, hd->local_buffer,
@@ -168,9 +168,17 @@ static void host_update_position(struct comp_dev *dev, uint32_t bytes)
 	if (hd->local_pos >= hd->host_size)
 		hd->local_pos = 0;
 
+	count++;
+	if (count % 100 == 0)
+		comp_info(dev, "count %d, local pos %d, host size %d, period_bytes %d", count, hd->local_pos, hd->host_size, hd->host_period_bytes);
+
+	if (count % 100 == 0)
+		comp_info(dev, "hd local pos %d, host size %d, no stream_pos %d", hd->local_pos, hd->host_size, hd->no_stream_position);
 	/* Don't send stream position if no_stream_position == 1 */
 	if (!hd->no_stream_position) {
 		hd->report_pos += bytes;
+		if (count % 100 == 0)
+			comp_info(dev, "hd host_period_bytes %d, report_pos %d", hd->host_period_bytes, hd->report_pos);
 
 		/* host_period_bytes is set to zero to disable position update
 		 * by IPC for FW version before 3.11, so send IPC message to
@@ -178,15 +186,18 @@ static void host_update_position(struct comp_dev *dev, uint32_t bytes)
 		 */
 		if (hd->host_period_bytes != 0 &&
 		    hd->report_pos >= hd->host_period_bytes) {
+			comp_info(dev, "count %d, local pos %d, host size %d, period_bytes %d", count, hd->local_pos, hd->host_size, hd->host_period_bytes);
 			hd->report_pos = 0;
 
 			/* send timestamped position to host
 			 * (updates position first, by calling ops.position())
 			 */
 			pipeline_get_timestamp(dev->pipeline, dev, &hd->posn);
+			comp_info(dev, "host period bytes %d, local pos %d, pipeline posnoffset %x", hd->host_period_bytes, hd->local_pos, dev->pipeline->posn_offset);
 			mailbox_stream_write(dev->pipeline->posn_offset,
 					     &hd->posn, sizeof(hd->posn));
 			ipc_msg_send(hd->msg, &hd->posn, false);
+			//ipc_msg_send(hd->msg, &hd->posn, true);
 		}
 	}
 }
@@ -238,7 +249,7 @@ static void host_dma_cb(void *arg, enum notify_id type, void *data)
 	struct host_data *hd = comp_get_drvdata(dev);
 	uint32_t bytes = next->elem.size;
 
-	comp_cl_dbg(&comp_host, "host_dma_cb() %p", &comp_host);
+	//comp_cl_info(&comp_host, "host_dma_cb() %p, bytes %x", &comp_host, bytes);
 
 	/* update position */
 	host_update_position(dev, bytes);
@@ -297,7 +308,7 @@ static int host_copy_one_shot(struct comp_dev *dev)
 	uint32_t copy_bytes = 0;
 	int ret = 0;
 
-	comp_dbg(dev, "host_copy_one_shot()");
+	//comp_info(dev, "host_copy_one_shot()");
 
 	copy_bytes = host_get_copy_bytes_one_shot(dev);
 	if (!copy_bytes) {
@@ -392,7 +403,7 @@ static int host_copy_normal(struct comp_dev *dev)
 	uint32_t flags = 0;
 	int ret = 0;
 
-	comp_dbg(dev, "host_copy_normal()");
+	comp_info(dev, "host_copy_normal()");
 
 	if (hd->copy_type == COMP_COPY_BLOCKING)
 		flags |= DMA_COPY_BLOCKING;
@@ -425,6 +436,7 @@ static int create_local_elems(struct comp_dev *dev, uint32_t buffer_count,
 	if (hd->host.elem_array.count) {
 		elem_array = &hd->local.elem_array;
 
+		comp_err(dev, "create_local_elems(): dma_sg_alloc A");
 		/* config buffer will be used as proxy */
 		err = dma_sg_alloc(&hd->config.elem_array, SOF_MEM_ZONE_RUNTIME,
 				   dir, 1, 0, 0, 0);
@@ -436,6 +448,7 @@ static int create_local_elems(struct comp_dev *dev, uint32_t buffer_count,
 		elem_array = &hd->config.elem_array;
 	}
 
+	comp_err(dev, "create_local_elems(): dma_sg_alloc() ");
 	err = dma_sg_alloc(elem_array, SOF_MEM_ZONE_RUNTIME, dir, buffer_count,
 			   buffer_bytes,
 			   (uintptr_t)(hd->dma_buffer->stream.addr), 0);
@@ -462,7 +475,7 @@ static int host_trigger(struct comp_dev *dev, int cmd)
 	struct host_data *hd = comp_get_drvdata(dev);
 	int ret = 0;
 
-	comp_dbg(dev, "host_trigger()");
+	comp_info(dev, "host_trigger()");
 
 	ret = comp_set_state(dev, cmd);
 	if (ret < 0)
@@ -769,6 +782,7 @@ static int host_params(struct comp_dev *dev,
 		return -ENODEV;
 	}
 
+	comp_info(dev, "host_params(), dma_set_config");
 	err = dma_set_config(hd->chan, &hd->config);
 	if (err < 0) {
 		comp_err(dev, "host_params(): dma_set_config() failed");
@@ -844,6 +858,7 @@ static int host_position(struct comp_dev *dev,
 
 	/* TODO: improve accuracy by adding current DMA position */
 	posn->host_posn = hd->local_pos;
+	comp_info(dev, "host_posn %x", (int)posn->host_posn);
 
 	return 0;
 }

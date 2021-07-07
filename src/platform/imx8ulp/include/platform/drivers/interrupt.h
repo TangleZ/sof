@@ -23,6 +23,7 @@
 #define DMA2_c0_ErrTranc 6
 #define IRQ_NUM_MU2          14
 #define IRQ_NUM_MU3          15
+#define IRQ_SAI5_NUM         23
 #define IRQ_SAI6_NUM         24
 #define IRQ_SAI7_NUM         25
 

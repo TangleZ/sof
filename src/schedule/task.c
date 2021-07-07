@@ -39,6 +39,8 @@ typedef enum task_state (*task_main)(void *);
 DECLARE_SOF_UUID("main-task", main_task_uuid, 0x37f1d41f, 0x252d, 0x448d,
 		 0xb9, 0xc4, 0x1e, 0x2b, 0xee, 0x8e, 0x1b, 0xf1);
 
+DECLARE_TR_CTX(main_tr, SOF_UUID(main_task_uuid), LOG_LEVEL_INFO);
+
 static void sys_module_init(void)
 {
 	intptr_t *module_init = (intptr_t *)(&_module_init_start);
@@ -55,9 +57,9 @@ static uint64_t task_main_deadline(void *data)
 enum task_state task_main_primary_core(void *data)
 {
 	struct ipc *ipc = ipc_get();
-
 	/* main audio processing loop */
 	while (1) {
+		//tr_err(&main_tr, "task_main_primary_core, pm D3 %d", ipc->pm_prepare_D3);
 		/* sleep until next IPC or DMA */
 		wait_for_interrupt(0);
 
@@ -75,6 +77,7 @@ void task_main_init(void)
 	struct task **main_task = task_main_get();
 	int cpu = cpu_get_id();
 	int ret;
+	//tr_err(&main_tr, "task_main_init");
 	task_main main_main = cpu == PLATFORM_PRIMARY_CORE_ID ?
 		&task_main_primary_core : &task_main_secondary_core;
 	struct task_ops ops = {
@@ -92,6 +95,7 @@ void task_main_init(void)
 
 void task_main_free(void)
 {
+	//tr_err(&main_tr, "task_main_free");
 	schedule_task_free(*task_main_get());
 }
 
@@ -119,8 +123,11 @@ int task_main_start(struct sof *sof)
 	if (ret < 0)
 		return ret;
 
+	/* 8ulp can run at here */
 	/* task initialized in edf_scheduler_init */
+	tr_err(&main_tr, "start main task...");
 	ret = schedule_task(*task_main_get(), 0, UINT64_MAX);
+	tr_err(&main_tr, "start main task end...");
 
 	/* something bad happened */
 	return -EIO;

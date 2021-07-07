@@ -77,6 +77,7 @@ struct dai_ops {
 	int (*pm_context_store)(struct dai *dai);
 	int (*get_hw_params)(struct dai *dai,
 			     struct sof_ipc_stream_params *params, int dir);
+	int (*hw_params)(struct dai *dai, struct sof_ipc_stream_params *params);
 	int (*get_handshake)(struct dai *dai, int direction, int stream_id);
 	int (*get_srcid)(struct dai *dai, int direction, int stream_id);
 	int (*get_fifo)(struct dai *dai, int direction, int stream_id);
@@ -383,6 +384,19 @@ static inline int dai_get_hw_params(struct dai *dai,
 
 	platform_shared_commit(dai, sizeof(*dai));
 
+	return ret;
+}
+
+static inline int dai_hw_params(struct dai *dai,
+				    struct sof_ipc_stream_params *params)
+{
+	int ret;
+	if (dai->drv->ops.hw_params)
+		ret = dai->drv->ops.hw_params(dai, params);
+
+	platform_shared_commit(dai, sizeof(*dai));
+
+	ret = 0;
 	return ret;
 }
 

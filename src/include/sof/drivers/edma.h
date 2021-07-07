@@ -97,8 +97,8 @@
 #define EDMA0_SAI_CHAN_TX_IRQ	349
 
 /* fix 8ulp sai chan*/
-#define EDMA2_SAI_CHAN_RX	0
-#define EDMA2_SAI_CHAN_TX	1
+#define EDMA2_CHAN0	0
+#define EDMA2_CHAN1	1
 /* 8ulp edma2 */
 #define EDMA2_CHAN0_IRQ 6
 #define EDMA2_CHAN1_IRQ 7
