@@ -817,6 +817,7 @@ static int ipc_glb_trace_message(uint32_t header)
 	switch (cmd) {
 	case SOF_IPC_TRACE_DMA_PARAMS:
 	case SOF_IPC_TRACE_DMA_PARAMS_EXT:
+		return 0;
 		return ipc_dma_trace_config(header);
 	case SOF_IPC_TRACE_FILTER_UPDATE:
 		return ipc_trace_filter_update(header);
@@ -1477,6 +1478,7 @@ void ipc_msg_send(struct ipc_msg *msg, void *data, bool high_priority)
 	struct ipc *ipc = ipc_get();
 	uint32_t flags;
 	int ret;
+	int val;
 
 	spin_lock_irq(&ipc->lock, flags);
 
@@ -1494,6 +1496,8 @@ void ipc_msg_send(struct ipc_msg *msg, void *data, bool high_priority)
 	}
 
 	tr_info(&ipc_tr, "ipc: msg->list %x, msp->list next %x, ipc list %x", (void *)&msg->list, msg->list.next, (void *)&ipc->msg_list);
+	val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+	tr_info(&ipc_tr, "IMX GCR %x", val);
 	/* add to queue unless already there */
 	if (list_is_empty(&msg->list)) {
 		if (high_priority)

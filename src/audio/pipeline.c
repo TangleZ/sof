@@ -765,10 +765,13 @@ static int pipeline_comp_trigger(struct comp_dev *current,
 		pipeline_is_same_sched_comp(current->pipeline,
 					    ppl_data->start->pipeline);
 	int err;
+	int val;
 
 	pipe_info(current->pipeline, "pipeline_comp_trigger(), current->comp.id = %u, dir = %u, count %d",
 		 dev_comp_id(current), dir, count);
 	count++;
+	val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+	pipe_info(current->pipeline, "pipeline comp tirgger IMX GCR %x", val);
 
 	/* trigger should propagate to the connected pipelines,
 	 * which need to be scheduled together
@@ -881,6 +884,7 @@ int pipeline_trigger(struct pipeline *p, struct comp_dev *host, int cmd)
 		.skip_incomplete = true,
 	};
 	int ret;
+	int val;
 
 	pipe_info(p, "pipe trigger cmd %d", cmd);
 
@@ -907,7 +911,9 @@ int pipeline_trigger(struct pipeline *p, struct comp_dev *host, int cmd)
 	}
 
 	pipeline_schedule_triggered(&walk_ctx, cmd);
-
+	
+	val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+	pipe_info(p, "pipe IMX GCR %x", val);
 	pipe_info(p, "pipe trigger return");
 	return ret;
 }

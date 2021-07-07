@@ -85,6 +85,7 @@ enum task_state ipc_platform_do_cmd(void *data)
 {
 	struct ipc *ipc = ipc_get();
 	struct sof_ipc_cmd_hdr *hdr;
+	int val;
 	/* Use struct ipc_data *iipc = ipc_get_drvdata(ipc); if needed */
 
 	/* perform command */
@@ -93,12 +94,15 @@ enum task_state ipc_platform_do_cmd(void *data)
 
 	platform_shared_commit(ipc, sizeof(*ipc));
 
+	val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+	tr_info(&ipc_tr, "ipc platform do cmd IMX GCR %x", val);
 	return SOF_TASK_STATE_COMPLETED;
 }
 
 void ipc_platform_complete_cmd(void *data)
 {
 	struct ipc *ipc = data;
+	int val;
 
 	/* enable GP interrupt #0 - accept new messages */
 	imx_mu_xcr_rmw(IMX_MU_VERSION, IMX_MU_GIER, IMX_MU_xCR_GIEn(IMX_MU_VERSION, 0), 0);
@@ -115,6 +119,8 @@ void ipc_platform_complete_cmd(void *data)
 			wait_for_interrupt(0);
 	}
 
+	val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+	tr_info(&ipc_tr, "IMX GCR %x", val);
 	platform_shared_commit(ipc, sizeof(*ipc));
 	tr_info(&ipc_tr, "ipc_platform_complete_cmd return");
 }
@@ -123,10 +129,9 @@ int ipc_platform_send_msg(struct ipc_msg *msg)
 {
 	struct ipc *ipc = ipc_get();
 	int ret = 0;
-	unsigned int val = 0;
+	int val;
 
-	val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR) & IMX_MU_xCR_GIRn(IMX_MU_VERSION, 1));
-	tr_info(&ipc_tr, "ipc: msg tx -> 0x%x, pend %d, val %x", msg->header, ipc->is_notification_pending, imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR) & IMX_MU_xCR_GIRn(IMX_MU_VERSION, 1)));
+	tr_info(&ipc_tr, "ipc: msg tx -> 0x%x, pend %d, val %x", msg->header, ipc->is_notification_pending, imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR)) & IMX_MU_xCR_GIRn(IMX_MU_VERSION, 1));
 	/* can't send notification when one is in progress */
 	if (ipc->is_notification_pending ||
 	    imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR)) & IMX_MU_xCR_GIRn(IMX_MU_VERSION, 1)) {
@@ -145,7 +150,9 @@ int ipc_platform_send_msg(struct ipc_msg *msg)
 
 	platform_shared_commit(msg, sizeof(*msg));
 
-	val = val +2;
+       val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+       tr_info(&ipc_tr, "IMX GCR %x", val);
+
 out:
 	platform_shared_commit(ipc, sizeof(*ipc));
 

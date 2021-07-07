@@ -714,6 +714,7 @@ static int volume_copy(struct comp_dev *dev)
 	uint32_t sink_bytes;
 	uint32_t frames;
 	int64_t prev_sum = 0;
+	int val;
 
 	comp_dbg(dev, "volume_copy()");
 
@@ -725,8 +726,11 @@ static int volume_copy(struct comp_dev *dev)
 	/* Get source, sink, number of frames etc. to process. */
 	comp_get_copy_limits_with_lock(source, sink, &c);
 
-	comp_dbg(dev, "volume_copy(), source_bytes = 0x%x, sink_bytes = 0x%x",
+	comp_info(dev, "volume_copy(), source_bytes = 0x%x, sink_bytes = 0x%x",
 		 c.source_bytes, c.sink_bytes);
+
+	val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+	comp_info(dev, "volume IMX GCR %x", val);
 
 	while (c.frames) {
 		if (cd->ramp_finished || cd->vol_ramp_frames > c.frames) {

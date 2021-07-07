@@ -57,12 +57,16 @@ static uint64_t task_main_deadline(void *data)
 enum task_state task_main_primary_core(void *data)
 {
 	struct ipc *ipc = ipc_get();
+	int val;
 	/* main audio processing loop */
 	while (1) {
 		//tr_err(&main_tr, "task_main_primary_core, pm D3 %d", ipc->pm_prepare_D3);
 		/* sleep until next IPC or DMA */
 		wait_for_interrupt(0);
 
+
+	       val = imx_mu_read(IMX_MU_xCR(IMX_MU_VERSION, IMX_MU_GCR));
+	       tr_info(&main_tr, "task main IMX GCR %x", val);
 		if (!ipc->pm_prepare_D3)
 			ipc_send_queued_msg();
 
