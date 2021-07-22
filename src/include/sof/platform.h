@@ -54,6 +54,9 @@ int platform_context_save(struct sof *sof);
 
 /** @}*/
 
+#define convert_host_to_local(addr) (SDRAM0_BASE + ((addr) - MEM_RESERVED))
+#define convert_local_to_host(addr) (MEM_RESERVED + ((addr) - SDRAM0_BASE))
+
 #endif
 
 #endif /* __SOF_PLATFORM_H__ */
